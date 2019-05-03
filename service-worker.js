@@ -1,4 +1,4 @@
-const CACHE_NAME = "News-Reader1";
+const CACHE_NAME = "News-Reader";
 var urlsToCache = [
     "/",
     // asset
