@@ -33,20 +33,49 @@ self.addEventListener("install", function (event) {
 
 // Cache and return requests
 self.addEventListener("fetch", function (event) {
-    event.respondWith(
-        caches
-        .match(event.request, {
-            cacheName: CACHE_NAME
-        })
-        .then(function (response) {
-            if (response) {
-                console.log("ServiceWorker: Gunakan aset dari cache: ", response.url);
-                return response;
-            }
-            console.log("ServiceWorker: Memuat Aset dari Server : ", event.request.url);
-            return fetch(event.request);
-        })
-    );
+    var base_url = "https://readerapi.codepolitan.com/";
+
+    /* memeriksa apakah fetch saat ini meminta data dari api 
+    (url yang diminta mengandung isi base_url).
+    */
+    /*Method indexOf akan mengembalikan nilai -1 
+    jika base_url tidak ada di request saat ini dan akan bernilai 
+    lebih dari -1 jika url yang diminta mengandung isi base_url.
+    */
+    if (event.request.url.indexOf(base_url) > -1) {
+        event.respondWith(
+            caches.open(CACHE_NAME)
+            .then(function (cache) {
+                return fetch(event.request)
+                    .then(function (response) {
+                        cache.put(event.request, response.clone());
+                        return response;
+                    })
+            })
+        );
+    } else {
+        event.respondWith(
+            caches
+            .match(event.request)
+            .then(function (response) {
+                return response || fetch(event.request);
+            })
+        )
+    }
+    // event.respondWith(
+    //     caches
+    //     .match(event.request, {
+    //         cacheName: CACHE_NAME
+    //     })
+    //     .then(function (response) {
+    //         if (response) {
+    //             console.log("ServiceWorker: Gunakan aset dari cache: ", response.url);
+    //             return response;
+    //         }
+    //         console.log("ServiceWorker: Memuat Aset dari Server : ", event.request.url);
+    //         return fetch(event.request);
+    //     })
+    // );
 });
 
 //penghapusan cache yang lama agar tidak membebani pengguna.
